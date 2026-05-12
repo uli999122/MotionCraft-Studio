@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotionCraft Studio - Desarrollo</title>
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        :root {
+            --bg-primary: #0A0A0A;
+            --bg-secondary: #141414;
+            --bg-tertiary: #1E1E1E;
+            --accent: #7C3AED;
+            --accent-light: #A78BFA;
+            --accent-gradient: linear-gradient(135deg, #7C3AED, #A855F7);
+            --text-primary: #FFFFFF;
+            --text-secondary: #A0A0A0;
+            --border: #2A2A2A;
+            --danger: #EF4444;
+            --success: #10B981;
+            --shadow-lg: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            --radius: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            user-select: none;
+        }
+
+        /* BLOQUEO PARA PRODUCCIÓN */
+        .block-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            z-index: 99999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .block-screen.active {
+            display: flex;
+        }
+
+        .block-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+            animation: float 3s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .block-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .block-text {
+            color: var(--text-secondary);
+            font-size: 16px;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        /* ========== HEADER ========== */
+        .header {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 20px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+            position: relative;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 18px;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.5); }
+        }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .tool-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .tool-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .tool-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .tool-btn[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: -30px;
+            background: var(--bg-tertiary);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--accent-gradient);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-primary);
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* ========== MAIN LAYOUT ========== */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 52px);
+            position: relative;
+        }
+
+        /* ========== LEFT PANEL ========== */
+        .panel-left {
+            width: 60px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 0;
+            gap: 4px;
+        }
+
+        .panel-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .panel-icon:hover {
+            background: var(--bg-tertiary);
+            color: white;
+        }
+
+        .panel-icon.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        /* ========== SIDEBAR ========== */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 12px 10px 36px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .search-box .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--text-secondary);
+            font-weight: 700;
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .media-card {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius);
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .media-card:hover {
+            border-color: var(--accent-light);
+            transform: translateY(-2px);
+        }
+
+        .media-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: var(--bg-primary);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 6px;
+        }
+
+        .media-name {
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .media-time {
+            font-size: 10px;
+            color: var(--text-secondary);
+        }
+
+        /* ========== CANVAS AREA ========== */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+            position: relative;
+        }
+
+        .canvas-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 16px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-badge {
+            padding: 4px 12px;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .canvas-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 20px;
+        }
+
+        .canvas {
+            background: #1a1a1a;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            box-shadow: var(--shadow-lg);
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        /* ========== FLOATING CONTROLS ========== */
+        .floating-controls {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 8px 20px;
+            border-radius: 40px;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .ctrl-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ctrl-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .ctrl-btn.play-btn {
+            width: 44px;
+            height: 44px;
+            background: var(--accent-gradient);
+            color: white;
+            font-size: 18px;
+        }
+
+        .ctrl-btn.play-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .time-display {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        /* ========== RIGHT PANEL ========== */
+        .panel-right {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .panel-right::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .panel-right::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        .props-section {
+            margin-bottom: 24px;
+        }
+
+        .props-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .props-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .props-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .props-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .props-row .props-input {
+            flex: 1;
+        }
+
+        .voice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .voice-chip {
+            padding: 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .voice-chip:hover {
+            border-color: var(--accent-light);
+        }
+
+        .voice-chip.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        /* ========== TIMELINE ========== */
+        .timeline-container {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 12px 16px;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .timeline-tools {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .zoom-slider {
+            width: 100px;
+            accent-color: var(--accent);
+        }
+
+        .timeline-tracks {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .timeline-track {
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 4px;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            position: relative;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .timeline-track:hover {
+            border-color: var(--accent-light);
+        }
+
+        .track-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            width: 60px;
+            flex-shrink: 0;
+        }
+
+        .track-content {
+            flex: 1;
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+        }
+
+        .clip {
+            background: var(--accent-gradient);
+            border-radius: 4px;
+            padding: 6px 10px;
+            font-size: 11px;
+            white-space: nowrap;
+            cursor: grab;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .clip:active {
+            cursor: grabbing;
+        }
+
+        /* ========== TOAST ========== */
+        .toast-container {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-size: 13px;
+            animation: toastIn 0.4s ease-out;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        @keyframes toastIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success { border-left: 3px solid var(--success); }
+        .toast.error { border-left: 3px solid var(--danger); }
+        .toast.info { border-left: 3px solid var(--accent); }
+
+        /* ========== MODAL ========== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal h3 {
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 1400px) {
+            .panel-right { width: 250px; }
+            .sidebar { width: 220px; }
+        }
+
+        @media (max-width: 1200px) {
+            .panel-right { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BLOQUEO PARA PRODUCCIÓN -->
+    <div class="block-screen" id="blockScreen">
+        <div class="block-icon">🚧</div>
+        <div class="block-title">MotionCraft Studio</div>
+        <div class="block-text">
+            Esta aplicación está en desarrollo y solo funciona en entorno local. 
+            No está disponible para acceso público todavía.
+        </div>
+        <div class="block-text" style="margin-top: 20px; font-size: 14px;">
+            👨‍💻 Ejecuta en localhost para desarrollo
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="header">
+        <div class="header-left">
+            <div class="logo">
+                <div class="logo-dot"></div>
+                MotionCraft
+            </div>
+            <span style="color: var(--text-secondary); font-size: 12px;">Studio</span>
+        </div>
+        
+        <div class="header-center">
+            <button class="tool-btn active" data-tooltip="Seleccionar" title="Seleccionar">⊹</button>
+            <button class="tool-btn" data-tooltip="Cortar" title="Cortar">✂</button>
+            <button class="tool-btn" data-tooltip="Texto" title="Texto">T</button>
+            <button class="tool-btn" data-tooltip="Efectos" title="Efectos">✨</button>
+            <button class="tool-btn" data-tooltip="Audio" title="Audio">♫</button>
+        </div>
+
+        <div class="header-right">
+            <button class="btn btn-ghost" onclick="undo()">↩</button>
+            <button class="btn btn-ghost" onclick="redo()">↪</button>
+            <button class="btn btn-ghost" onclick="exportVideo()">📤 Exportar</button>
+            <button class="btn btn-primary" onclick="saveProject()">💾 Guardar</button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <div class="main-container">
+        
+        <!-- LEFT ICON PANEL -->
+        <div class="panel-left">
+            <button class="panel-icon active" title="Medios">📁</button>
+            <button class="panel-icon" title="Transiciones">💫</button>
+            <button class="panel-icon" title="Filtros">🎨</button>
+            <button class="panel-icon" title="Overlays">📐</button>
+            <button class="panel-icon" title="Audio">🎵</button>
+        </div>
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Buscar medios...">
+            </div>
+
+            <div>
+                <div class="section-title">📁 Mis Archivos</div>
+            </div>
+            
+            <div class="media-grid">
+                <div class="media-card" onclick="addMedia('video')">
+                    <div class="media-thumb">🎬</div>
+                    <div class="media-name">Vacaciones.mp4</div>
+                    <div class="media-time">02:34</div>
+                </div>
+                <div class="media-card" onclick="addMedia('video')">
+                    <div class="media-thumb">🎥</div>
+                    <div class="media-name">Tutorial.mp4</div>
+                    <div class="media-time">05:12</div>
+                </div>
+                <div class="media-card" onclick="addMedia('audio')">
+                    <div class="media-thumb">🎵</div>
+                    <div class="media-name">Música.mp3</div>
+                    <div class="media-time">03:45</div>
+                </div>
+                <div class="media-card" onclick="addTextLayer()">
+                    <div class="media-thumb">📝</div>
+                    <div class="media-name">Texto</div>
+                    <div class="media-time">00:05</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-title">✨ Efectos Favoritos</div>
+            </div>
+            
+            <div class="media-grid">
+                <div class="media-card" onclick="addEffect('glitch')">
+                    <div class="media-thumb">⚡</div>
+                    <div class="media-name">Glitch</div>
+                </div>
+                <div class="media-card" onclick="addEffect('neon')">
+                    <div class="media-thumb">💫</div>
+                    <div class="media-name">Neon</div>
+                </div>
+                <div class="media-card" onclick="addEffect('vhs')">
+                    <div class="media-thumb">📼</div>
+                    <div class="media-name">VHS</div>
+                </div>
+                <div class="media-card" onclick="addEffect('cinematic')">
+                    <div class="media-thumb">🎬</div>
+                    <div class="media-name">Cine</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CANVAS -->
+        <main class="canvas-area">
+            <div class="canvas-header">
+                <span class="tab-badge">📹 Preview</span>
+                <div style="display: flex; gap: 8px;">
+                    <select class="props-input" style="width: auto; margin: 0; padding: 4px 8px; font-size: 12px;">
+                        <option>16:9 (1080p)</option>
+                        <option>9:16 (Stories)</option>
+                        <option>1:1 (Post)</option>
+                    </select>
+                    <span style="font-size: 12px; color: var(--text-secondary); display: flex; align-items: center;">50%</span>
+                </div>
+            </div>
+            <div class="canvas-container">
+                <canvas id="mainCanvas" class="canvas" width="1280" height="720"></canvas>
+                
+                <!-- FLOATING CONTROLS -->
+                <div class="floating-controls">
+                    <button class="ctrl-btn" onclick="skipBack()" title="Retroceder">⏮</button>
+                    <button class="ctrl-btn" onclick="stepBack()" title="Frame anterior">◂</button>
+                    <button class="ctrl-btn play-btn" id="playBtn" onclick="togglePlay()" title="Reproducir">▶</button>
+                    <button class="ctrl-btn" onclick="stepForward()" title="Frame siguiente">▸</button>
+                    <button class="ctrl-btn" onclick="skipForward()" title="Avanzar">⏭</button>
+                    <span class="time-display" id="timeDisplay">00:00 / 00:30</span>
+                </div>
+            </div>
+            
+            <!-- TIMELINE -->
+            <div class="timeline-container">
+                <div class="timeline-tools">
+                    <button class="tool-btn active" style="width: auto; padding: 4px 12px; font-size: 11px;">Todo</button>
+                    <button class="tool-btn" style="width: auto; padding: 4px 12px; font-size: 11px;">Video</button>
+                    <button class="tool-btn" style="width: auto; padding: 4px 12px; font-size: 11px;">Audio</button>
+                    <span style="flex: 1;"></span>
+                    <input type="range" class="zoom-slider" min="10" max="200" value="100">
+                </div>
+                <div class="timeline-tracks">
+                    <div class="timeline-track">
+                        <span class="track-label">🎥 Video</span>
+                        <div class="track-content">
+                            <div class="clip" draggable="true">Vacaciones.mp4</div>
+                        </div>
+                    </div>
+                    <div class="timeline-track">
+                        <span class="track-label">🎵 Audio</span>
+                        <div class="track-content">
+                            <div class="clip" draggable="true">Música.mp3</div>
+                        </div>
+                    </div>
+                    <div class="timeline-track">
+                        <span class="track-label">📝 Texto</span>
+                        <div class="track-content">
+                            <div class="clip" draggable="true">Título</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- RIGHT PROPERTIES PANEL -->
+        <aside class="panel-right">
+            <div class="props-section">
+                <div class="props-label">✏️ Texto a Voz Animado</div>
+                <input type="text" class="props-input" placeholder="Escribe tu texto..." id="ttsInput" value="¡Hola, bienvenido a MotionCraft!">
+                
+                <div class="props-label" style="margin-top: 12px;">🎤 Estilo de Voz</div>
+                <div class="voice-grid">
+                    <div class="voice-chip active" onclick="selectVoice('robot', this)">🤖 Robot</div>
+                    <div class="voice-chip" onclick="selectVoice('natural', this)">🗣 Natural</div>
+                    <div class="voice-chip" onclick="selectVoice('cartoon', this)">🎭 Cartoon</div>
+                    <div class="voice-chip" onclick="selectVoice('whisper', this)">🤫 Susurro</div>
+                    <div class="voice-chip" onclick="selectVoice('epic', this)">⚔️ Épica</div>
+                    <div class="voice-chip" onclick="selectVoice('alien', this)">👽 Alien</div>
+                </div>
+                
+                <button class="btn btn-primary" style="width: 100%; margin-top: 12px; justify-content: center;" onclick="generateTTS()">
+                    🎙 Generar Voz
+                </button>
+            </div>
+
+            <div class="props-section">
+                <div class="props-label">🎨 Estilo de Texto</div>
+                <div class="props-row">
+                    <input type="number" class="props-input" placeholder="Tamaño" value="48">
+                    <input type="color" class="props-input" style="padding: 4px 8px; height: auto;" value="#7C3AED">
+                </div>
+                <select class="props-input">
+                    <option>Inter</option>
+                    <option>Montserrat Bold</option>
+                    <option>Poppins</option>
+                    <option>Space Grotesk</option>
+                </select>
+            </div>
+
+            <div class="props-section">
+                <div class="props-label">✨ Animación</div>
+                <select class="props-input">
+                    <option>Fade In</option>
+                    <option>Slide Up</option>
+                    <option>Scale Pop</option>
+                    <option>Typewriter</option>
+                    <option>Glitch In</option>
+                    <option>Neon Pulse</option>
+                    <option>Wave</option>
+                </select>
+                <div class="props-row" style="margin-top: 8px;">
+                    <input type="number" class="props-input" placeholder="Duración (s)" value="0.5" step="0.1">
+                    <input type="number" class="props-input" placeholder="Retraso (s)" value="0" step="0.1">
+                </div>
+            </div>
+
+            <div class="props-section">
+                <div class="props-label">🎤 Info Voz IA</div>
+                <div style="background: var(--bg-tertiary); border-radius: var(--radius); padding: 12px; font-size: 12px; color: var(--text-secondary);">
+                    <p>Nuestras voces neuronales son únicas y no las encontrarás en otras aplicaciones.</p>
+                    <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
+                        <span style="background: var(--accent); padding: 4px 8px; border-radius: 4px; font-size: 10px; color: white;">Ultra-Realista</span>
+                        <span style="background: var(--accent); padding: 4px 8px; border-radius: 4px; font-size: 10px; color: white;">Animada</span>
+                        <span style="background: var(--accent); padding: 4px 8px; border-radius: 4px; font-size: 10px; color: white;">Local</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- EXPORT MODAL -->
+    <div class="modal-overlay" id="exportModal">
+        <div class="modal">
+            <h3>📤 Exportar Video</h3>
+            <div class="props-section">
+                <div class="props-label">Formato</div>
+                <select class="props-input">
+                    <option>MP4 (H.264)</option>
+                    <option>WebM</option>
+                    <option>GIF</option>
+                </select>
+            </div>
+            <div class="props-section">
+                <div class="props-label">Calidad</div>
+                <select class="props-input">
+                    <option>1080p</option>
+                    <option>720p</option>
+                    <option>480p</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal('exportModal')">Cancelar</button>
+                <button class="btn btn-primary" onclick="startExport()">Exportar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== BLOQUEO DE PRODUCCIÓN ==========
+        function isLocalhost() {
+            const hostname = window.location.hostname;
+            return hostname === 'localhost' || 
+                   hostname === '127.0.0.1' || 
+                   hostname.startsWith('192.168.') ||
+                   hostname.startsWith('10.') ||
+                   hostname === '[::1]';
+        }
+
+        function checkAccess() {
+            if (!isLocalhost() && window.location.hostname !== '') {
+                document.getElementById('blockScreen').classList.add('active');
+                document.querySelector('.header').style.display = 'none';
+                document.querySelector('.main-container').style.display = 'none';
+                console.log('🚫 Acceso bloqueado: Solo disponible en desarrollo local');
+            } else {
+                console.log('✅ Desarrollo local detectado');
+                initApp();
+            }
+        }
+
+        // ========== OPFS MANAGER ==========
+        class OPFSManager {
+            constructor() {
+                this.root = null;
+            }
+
+            async init() {
+                try {
+                    this.root = await navigator.storage.getDirectory();
+                    console.log('✅ OPFS inicializado');
+                    return true;
+                } catch (error) {
+                    console.error('Error OPFS:', error);
+                    return false;
+                }
+            }
+
+            async saveFile(name, data) {
+                try {
+                    const fileHandle = await this.root.getFileHandle(name, { create: true });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(data);
+                    await writable.close();
+                    return true;
+                } catch (error) {
+                    console.error('Error guardando:', error);
+                    return false;
+                }
+            }
+
+            async loadFile(name) {
+                try {
+                    const fileHandle = await this.root.getFileHandle(name);
+                    const file = await fileHandle.getFile();
+                    return await file.arrayBuffer();
+                } catch {
+                    return null;
+                }
+            }
+
+            async listFiles() {
+                const files = [];
+                for await (const [name] of this.root.entries()) {
+                    files.push(name);
+                }
+                return files;
+            }
+        }
+
+        const opfs = new OPFSManager();
+
+        // ========== ESTADO ==========
+        const appState = {
+            currentProject: null,
+            selectedVoice: 'robot',
+            isPlaying: false,
+            currentTime: 0,
+            duration: 30
+        };
+
+        // ========== FUNCIONES ==========
+        function initApp() {
+            opfs.init();
+            drawCanvasPlaceholder();
+            setupKeyboardShortcuts();
+            console.log('🎬 MotionCraft Studio listo');
+        }
+
+        function drawCanvasPlaceholder() {
+            const canvas = document.getElementById('mainCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            
+            // Fondo con gradiente
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(0.5, '#16213e');
+            gradient.addColorStop(1, '#0f3460');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Texto
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 48px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('MotionCraft Studio', canvas.width/2, canvas.height/2 - 20);
+            
+            ctx.font = '20px Inter, sans-serif';
+            ctx.fillStyle = '#A0A0A0';
+            ctx.fillText('Arrastra archivos aquí para comenzar', canvas.width/2, canvas.height/2 + 30);
+        }
+
+        function addMedia(type) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = type === 'video' ? 'video/*' : 'audio/*';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    await opfs.saveFile(`media_${Date.now()}_${file.name}`, file);
+                    showToast(`${file.name} cargado`, 'success');
+                }
+            };
+            input.click();
+        }
+
+        function addTextLayer() {
+            showToast('Capa de texto añadida', 'info');
+        }
+
+        function addEffect(effect) {
+            showToast(`Efecto "${effect}" aplicado`, 'info');
+        }
+
+        function togglePlay() {
+            appState.isPlaying = !appState.isPlaying;
+            const btn = document.getElementById('playBtn');
+            btn.textContent = appState.isPlaying ? '⏸' : '▶';
+        }
+
+        function skipBack() { showToast('⏮ -5s', 'info'); }
+        function skipForward() { showToast('⏭ +5s', 'info'); }
+        function stepBack() { showToast('◂ Frame anterior', 'info'); }
+        function stepForward() { showToast('▸ Frame siguiente', 'info'); }
+
+        function undo() { showToast('↩ Deshacer', 'info'); }
+        function redo() { showToast('↪ Rehacer', 'info'); }
+
+        function selectVoice(voice, element) {
+            appState.selectedVoice = voice;
+            document.querySelectorAll('.voice-chip').forEach(chip => chip.classList.remove('active'));
+            if (element) element.classList.add('active');
+            showToast(`Voz "${voice}" seleccionada`, 'info');
+        }
+
+        async function generateTTS() {
+            const text = document.getElementById('ttsInput').value;
+            if (!text) {
+                showToast('Escribe un texto primero', 'error');
+                return;
+            }
+
+            showToast('🎙 Generando voz...', 'info');
+
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                
+                const voiceSettings = {
+                    robot: { pitch: 0.5, rate: 0.8 },
+                    natural: { pitch: 1, rate: 1 },
+                    cartoon: { pitch: 2, rate: 1.2 },
+                    whisper: { pitch: 0.8, rate: 0.6, volume: 0.3 },
+                    epic: { pitch: 0.7, rate: 0.9, volume: 1 },
+                    alien: { pitch: 0.3, rate: 1.5 }
+                };
+                
+                const settings = voiceSettings[appState.selectedVoice] || voiceSettings.natural;
+                Object.assign(utterance, settings);
+                utterance.lang = 'es-ES';
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        function exportVideo() {
+            document.getElementById('exportModal').classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function startExport() {
+            closeModal('exportModal');
+            showToast('🎬 Exportando video...', 'info');
+            setTimeout(() => {
+                showToast('✅ Video exportado', 'success');
+            }, 2000);
+        }
+
+        async function saveProject() {
+            const saved = await opfs.saveFile('project.json', JSON.stringify(appState));
+            showToast(saved ? '💾 Proyecto guardado' : '❌ Error al guardar', saved ? 'success' : 'error');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.key === 'z') { e.preventDefault(); undo(); }
+                if (e.ctrlKey && e.key === 'y') { e.preventDefault(); redo(); }
+                if (e.key === ' ' && document.activeElement === document.body) {
+                    e.preventDefault();
+                    togglePlay();
+                }
+            });
+        }
+
+        // ========== INICIO ==========
+        checkAccess();
+    </script>
+</body>
+</html>
